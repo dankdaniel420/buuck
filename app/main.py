@@ -1,3 +1,4 @@
+from fastapi import Body
 import joblib
 import os
 from fastapi import FastAPI, Depends, HTTPException
@@ -178,6 +179,34 @@ def create_video(v: schemas.VideoCreate, db: Session = Depends(get_db)):
     db.add(vid); db.commit(); db.refresh(vid)
     return {"id": vid.id}
 
+@app.put("/video/{video_id}")
+def update_video(video_id: int, updates: dict = Body(...), db: Session = Depends(get_db)):
+    video = db.get(models.Video, video_id)
+    if not video:
+        raise HTTPException(status_code=404, detail="Video not found")
+    for key, value in updates.items():
+        if hasattr(video, key):
+            setattr(video, key, value)
+    db.commit()
+    db.refresh(video)
+    return {"id": video.id, **{k: getattr(video, k) for k in updates.keys() if hasattr(video, k)}}
+
+
+# Get a video by id
+@app.get("/video/{video_id}")
+def get_video(video_id: int, db: Session = Depends(get_db)):
+    video = db.get(models.Video, video_id)
+    if not video:
+        raise HTTPException(status_code=404, detail="Video not found")
+    return {
+        "id": video.id,
+        "title": video.title,
+        "creator_handle": video.creator_handle,
+        "views": video.views,
+        "length": video.length,
+        "votes": video.votes,
+        "likes": video.likes
+    }
 
 @app.post("/session/start")
 def session_start(s: schemas.SessionStart, db: Session = Depends(get_db)):
