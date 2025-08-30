@@ -26,35 +26,96 @@ async def lifespan(app: FastAPI):
             # Example: Add initial users
             if not db.query(models.User).first():
                 users = [
-                    models.User(handle="user1", wallet=100.0, total_donations=10.0, time_spent_on_app=120, account_age_days=365, total_interactions=50),
-                    models.User(handle="user2", wallet=200.0, total_donations=20.0, time_spent_on_app=240, account_age_days=730, total_interactions=100),
-                    models.User(handle="user3", wallet=300.0, total_donations=30.0, time_spent_on_app=360, account_age_days=1095, total_interactions=150),
-                    models.User(handle="user4", wallet=400.0, total_donations=40.0, time_spent_on_app=480, account_age_days=1460, total_interactions=200),
-                    models.User(handle="user5", wallet=500.0, total_donations=50.0, time_spent_on_app=600, account_age_days=1825, total_interactions=250),
-                    models.User(handle="user6", wallet=600.0, total_donations=60.0, time_spent_on_app=720, account_age_days=2190, total_interactions=300),
+                    # Bounty creators (do not create videos)
+                    models.User(handle="PixelPilot", wallet=153.0, total_donations=12.5, time_spent_on_app=98, account_age_days=120, total_interactions=67),
+                    models.User(handle="FrameFrenzy", wallet=95.0, total_donations=22.0, time_spent_on_app=80, account_age_days=45, total_interactions=101),
+                    models.User(handle="ClipCrafter", wallet=480.0, total_donations=33.0, time_spent_on_app=175, account_age_days=160, total_interactions=278),
+                    models.User(handle="MontageMaven", wallet=510.0, total_donations=61.0, time_spent_on_app=140, account_age_days=170, total_interactions=175),
+                    models.User(handle="VFXValkyrie", wallet=777.0, total_donations=95.0, time_spent_on_app=180, account_age_days=180, total_interactions=388),
+                    models.User(handle="ViralVisionary", wallet=410.0, total_donations=55.0, time_spent_on_app=150, account_age_days=180, total_interactions=189),
+                    models.User(handle="RenderRogue", wallet=199.0, total_donations=29.5, time_spent_on_app=50, account_age_days=20, total_interactions=84),
+                    # Video creators (no more than 2 videos each)
+                    models.User(handle="EditEagle", wallet=620.0, total_donations=47.0, time_spent_on_app=60, account_age_days=30, total_interactions=222),
+                    models.User(handle="JumpCutJedi", wallet=305.0, total_donations=19.0, time_spent_on_app=90, account_age_days=80, total_interactions=110),
+                    models.User(handle="CodeCrusader", wallet=287.5, total_donations=8.0, time_spent_on_app=110, account_age_days=90, total_interactions=143),
+                    models.User(handle="MontageMaster", wallet=210.0, total_donations=15.0, time_spent_on_app=70, account_age_days=60, total_interactions=99),
+                    models.User(handle="VFXVirtuoso", wallet=330.0, total_donations=25.0, time_spent_on_app=120, account_age_days=100, total_interactions=150),
+                    models.User(handle="PetPrankster", wallet=180.0, total_donations=10.0, time_spent_on_app=40, account_age_days=20, total_interactions=55),
+                    models.User(handle="SoundSensei", wallet=260.0, total_donations=18.0, time_spent_on_app=80, account_age_days=70, total_interactions=88),
+                    models.User(handle="MaskMagician", wallet=145.0, total_donations=7.0, time_spent_on_app=35, account_age_days=15, total_interactions=40),
+                    models.User(handle="TransitionTiger", wallet=175.0, total_donations=12.0, time_spent_on_app=60, account_age_days=25, total_interactions=60),
                 ]
                 db.add_all(users)
+                db.commit()
 
-            # Example: Add initial videos
             if not db.query(models.Video).first():
                 videos = [
-                    models.Video(creator_handle="user1", title="Video 1", phash="hash1"),
-                    models.Video(creator_handle="user2", title="Video 2", phash="hash2"),
-                    models.Video(creator_handle="user3", title="Video 3", phash="hash3"),
-                    models.Video(creator_handle="user4", title="Video 4", phash="hash4"),
-                    models.Video(creator_handle="user1", title="Video 5", phash="hash5"),
+                    models.Video(creator_handle="EditEagle", title="Speedrun Editing: 60s Transformation", phash="hash5", length=60, views=120, votes=15, likes=40),
+                    models.Video(creator_handle="EditEagle", title="30 Second Color Grading Tip", phash="hash13", length=30, views=80, votes=10, likes=25),
+                    models.Video(creator_handle="JumpCutJedi", title="Jump Cut Masterclass", phash="hash7", length=54, views=200, votes=22, likes=60),
+                    models.Video(creator_handle="JumpCutJedi", title="Whip Pan Transition Demo", phash="hash15", length=25, views=95, votes=8, likes=30),
+                    models.Video(creator_handle="CodeCrusader", title="Python Animation Challenge", phash="hash2", length=92, views=150, votes=18, likes=50),
+                    models.Video(creator_handle="CodeCrusader", title="Keyboard Macro Setup Fast", phash="hash18", length=44, views=60, votes=5, likes=20),
+                    models.Video(creator_handle="MontageMaster", title="Travel Vlog: 10 Countries in 5 Minutes", phash="hash8", length=120, views=300, votes=30, likes=100),
+                    models.Video(creator_handle="MontageMaster", title="Mountain Hike Timelapse", phash="hash19", length=80, views=110, votes=12, likes=35),
+                    models.Video(creator_handle="VFXVirtuoso", title="VFX Lightning Tutorial", phash="hash10", length=66, views=170, votes=20, likes=55),
+                    models.Video(creator_handle="VFXVirtuoso", title="Particle Explosion Demo", phash="hash20", length=70, views=90, votes=7, likes=28),
+                    models.Video(creator_handle="PetPrankster", title="Best Cat Fails 2025", phash="hash4", length=48, views=250, votes=35, likes=120),
+                    models.Video(creator_handle="PetPrankster", title="Snappy Pet Intro Sequence", phash="hash17", length=36, views=60, votes=6, likes=18),
+                    models.Video(creator_handle="SoundSensei", title="Sound Design Basics in 50s", phash="hash16", length=50, views=130, votes=14, likes=45),
+                    models.Video(creator_handle="SoundSensei", title="Quick Foley Demo", phash="hash21", length=40, views=55, votes=4, likes=15),
+                    models.Video(creator_handle="MaskMagician", title="Quick Masking Trick", phash="hash14", length=28, views=40, votes=3, likes=10),
+                    models.Video(creator_handle="MaskMagician", title="Layer Reveal Animation", phash="hash22", length=32, views=35, votes=2, likes=8),
+                    models.Video(creator_handle="TransitionTiger", title="Whip Pan Transition Demo", phash="hash15", length=25, views=75, votes=9, likes=22),
+                    models.Video(creator_handle="TransitionTiger", title="Spin Cut Example", phash="hash23", length=29, views=50, votes=5, likes=14),
                 ]
                 db.add_all(videos)
+                db.commit()
 
-            # Example: Add initial bounties
             if not db.query(models.Bounty).first():
                 bounties = [
-                    models.Bounty(description="Solve problem 1", creator_handle="user5", prize_pool=50.0, cutoff_date=datetime(2025, 8, 21), judging_start=datetime(2025, 8, 22), judging_end=datetime(2025, 8, 29), is_closed=True),
-                    models.Bounty(description="Solve problem 2", creator_handle="user6", prize_pool=100.0, cutoff_date=datetime(2025, 9, 2), judging_start=datetime(2025, 9, 3), judging_end=datetime(2025, 9, 7), is_closed=False),
+                    models.Bounty(description="Create a montage of drone footage with at least 3 different locations.", creator_handle="PixelPilot", prize_pool=75.0, cutoff_date=datetime(2025, 9, 10), judging_start=datetime(2025, 9, 11), judging_end=datetime(2025, 9, 18), is_closed=False, following=False),
+                    models.Bounty(description="Edit a video showing a creative use of slow motion in sports.", creator_handle="FrameFrenzy", prize_pool=60.0, cutoff_date=datetime(2025, 9, 15), judging_start=datetime(2025, 9, 16), judging_end=datetime(2025, 9, 22), is_closed=False, following=False),
+                    models.Bounty(description="Produce a tutorial for beginners on setting up a home video studio.", creator_handle="ClipCrafter", prize_pool=80.0, cutoff_date=datetime(2025, 9, 20), judging_start=datetime(2025, 9, 21), judging_end=datetime(2025, 9, 28), is_closed=False, following=False),
+                    models.Bounty(description="Make a travel vlog covering at least 5 countries in under 5 minutes.", creator_handle="MontageMaven", prize_pool=120.0, cutoff_date=datetime(2025, 9, 25), judging_start=datetime(2025, 9, 26), judging_end=datetime(2025, 10, 2), is_closed=False, following=False),
+                    models.Bounty(description="Show off your best VFX lightning effect in a short clip.", creator_handle="VFXValkyrie", prize_pool=90.0, cutoff_date=datetime(2025, 9, 30), judging_start=datetime(2025, 10, 1), judging_end=datetime(2025, 10, 7), is_closed=False, following=False),
+                    models.Bounty(description="Create a compilation of funny pet fails with creative editing.", creator_handle="ViralVisionary", prize_pool=55.0, cutoff_date=datetime(2025, 9, 12), judging_start=datetime(2025, 9, 13), judging_end=datetime(2025, 9, 19), is_closed=False, following=False),
+                    models.Bounty(description="Explain a technical concept visually using animation or graphics.", creator_handle="RenderRogue", prize_pool=70.0, cutoff_date=datetime(2025, 9, 18), judging_start=datetime(2025, 9, 19), judging_end=datetime(2025, 9, 25), is_closed=False, following=False),
                 ]
                 db.add_all(bounties)
+                db.commit()
 
-            db.commit()
+                # Re-query committed objects for correct IDs
+                users = db.query(models.User).all()
+                videos = db.query(models.Video).all()
+                bounties = db.query(models.Bounty).all()
+                video_map = {v.title: v for v in videos}
+                bounty_map = {b.description: b for b in bounties}
+                user_map = {u.handle: u for u in users}
+                submissions = [
+                    # Drone montage bounty (using existing videos)
+                    models.BountySubmission(bounty_id=bounty_map["Create a montage of drone footage with at least 3 different locations."].id, creator_handle=user_map["EditEagle"].handle, video_id=video_map["Speedrun Editing: 60s Transformation"].id),
+                    models.BountySubmission(bounty_id=bounty_map["Create a montage of drone footage with at least 3 different locations."].id, creator_handle=user_map["MontageMaster"].handle, video_id=video_map["Travel Vlog: 10 Countries in 5 Minutes"].id),
+                    # Slow motion sports bounty
+                    models.BountySubmission(bounty_id=bounty_map["Edit a video showing a creative use of slow motion in sports."].id, creator_handle=user_map["JumpCutJedi"].handle, video_id=video_map["Jump Cut Masterclass"].id),
+                    models.BountySubmission(bounty_id=bounty_map["Edit a video showing a creative use of slow motion in sports."].id, creator_handle=user_map["TransitionTiger"].handle, video_id=video_map["Whip Pan Transition Demo"].id),
+                    # Home studio bounty
+                    models.BountySubmission(bounty_id=bounty_map["Produce a tutorial for beginners on setting up a home video studio."].id, creator_handle=user_map["CodeCrusader"].handle, video_id=video_map["Python Animation Challenge"].id),
+                    models.BountySubmission(bounty_id=bounty_map["Produce a tutorial for beginners on setting up a home video studio."].id, creator_handle=user_map["SoundSensei"].handle, video_id=video_map["Sound Design Basics in 50s"].id),
+                    # Travel vlog bounty
+                    models.BountySubmission(bounty_id=bounty_map["Make a travel vlog covering at least 5 countries in under 5 minutes."].id, creator_handle=user_map["MontageMaster"].handle, video_id=video_map["Mountain Hike Timelapse"].id),
+                    # VFX lightning bounty
+                    models.BountySubmission(bounty_id=bounty_map["Show off your best VFX lightning effect in a short clip."].id, creator_handle=user_map["VFXVirtuoso"].handle, video_id=video_map["VFX Lightning Tutorial"].id),
+                    models.BountySubmission(bounty_id=bounty_map["Show off your best VFX lightning effect in a short clip."].id, creator_handle=user_map["VFXVirtuoso"].handle, video_id=video_map["Particle Explosion Demo"].id),
+                    # Pet fails bounty
+                    models.BountySubmission(bounty_id=bounty_map["Create a compilation of funny pet fails with creative editing."].id, creator_handle=user_map["PetPrankster"].handle, video_id=video_map["Best Cat Fails 2025"].id),
+                    models.BountySubmission(bounty_id=bounty_map["Create a compilation of funny pet fails with creative editing."].id, creator_handle=user_map["PetPrankster"].handle, video_id=video_map["Snappy Pet Intro Sequence"].id),
+                    # Technical animation bounty
+                    models.BountySubmission(bounty_id=bounty_map["Explain a technical concept visually using animation or graphics."].id, creator_handle=user_map["CodeCrusader"].handle, video_id=video_map["Keyboard Macro Setup Fast"].id),
+                    models.BountySubmission(bounty_id=bounty_map["Explain a technical concept visually using animation or graphics."].id, creator_handle=user_map["MaskMagician"].handle, video_id=video_map["Quick Masking Trick"].id),
+                ]
+                db.add_all(submissions)
+                db.commit()
         except SQLAlchemyError as e:
             print(f"Error during startup data initialization: {e}")
 
@@ -93,7 +154,7 @@ def create_user(user_handle: str, db: Session = Depends(get_db)):
 
 @app.post("/video/create")
 def create_video(v: schemas.VideoCreate, db: Session = Depends(get_db)):
-    vid = models.Video(creator_id=v.creator_id, title=v.title, phash=v.phash, c2pa_status=v.c2pa_status)
+    vid = models.Video(creator_id=v.creator_id, title=v.title, phash=v.phash, length=v.length)
     db.add(vid); db.commit(); db.refresh(vid)
     return {"id": vid.id}
 
@@ -122,11 +183,11 @@ def session_event(ev: schemas.SessionEventIn, db: Session = Depends(get_db)):
     features = [
         ev.seconds_watched,
         ev.interactions,
-        db.get(models.Viewer, db.get(models.Session, ev.session_id).viewer_handle).total_interactions,
+        db.get(models.User, db.get(models.Session, ev.session_id).viewer_handle).total_interactions,
         ev.donation_amount,
-        db.get(models.Viewer, db.get(models.Session, ev.session_id).viewer_handle).total_donations,
-        db.get(models.Viewer, db.get(models.Session, ev.session_id).viewer_handle).time_spent_on_app,
-        db.get(models.Viewer, db.get(models.Session, ev.session_id).viewer_handle).account_age_days
+        db.get(models.User, db.get(models.Session, ev.session_id).viewer_handle).total_donations,
+        db.get(models.User, db.get(models.Session, ev.session_id).viewer_handle).time_spent_on_app,
+        db.get(models.User, db.get(models.Session, ev.session_id).viewer_handle).account_age_days
     ]
     is_suspicious = fraud_model.predict([features])[0]  # Assuming the model returns a boolean
 
@@ -135,7 +196,6 @@ def session_event(ev: schemas.SessionEventIn, db: Session = Depends(get_db)):
         db.commit()
         return {"event_id": e.id, "status": "under_review"}
 
-    ledger_post(db, account="escrow", debit=ev.donation_amount, credit=0.0, ref_type="donation", ref_id=e.id)
     return {"event_id": e.id, "status": "approved"}
 
 @app.post("/session/close")
@@ -150,7 +210,38 @@ def get_top_bounties(db: Session = Depends(get_db)):
     Endpoint to fetch top bounty ideas.
     """
     bounties = db.query(models.Bounty).all()  # Default sorting by donations assumed
-    return bounties
+    result = []
+    for bounty in bounties:
+        # Use relationship to get all submissions and their videos
+        seen_creator_handles = set()
+        current_videos = []
+        for submission in bounty.submissions:
+            v = submission.video
+            if v and v.creator_handle not in seen_creator_handles:
+                video_data = {
+                    "id": v.id,
+                    "title": v.title,
+                    "creator_handle": v.creator_handle,
+                    "views": v.views,
+                    "duration": v.length,
+                    "votes": v.votes,
+                    "likes": v.likes
+                }
+                current_videos.append(video_data)
+                seen_creator_handles.add(v.creator_handle)
+        bounty_dict = {
+            "id": bounty.id,
+            "description": bounty.description,
+            "prize_pool": bounty.prize_pool,
+            "cutoff_date": bounty.cutoff_date.isoformat(),
+            "judging_start": bounty.judging_start.isoformat(),
+            "judging_end": bounty.judging_end.isoformat(),
+            "is_closed": bounty.is_closed,
+            "current_videos": current_videos,
+            "following": bounty.following
+        }
+        result.append(bounty_dict)
+    return result
 
 @app.post("/bounty/create", response_model=BountyOut)
 def create_bounty(bounty: BountyCreate, db: Session = Depends(get_db)):
