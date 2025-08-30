@@ -1,4 +1,5 @@
 import joblib
+import os
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
@@ -11,6 +12,11 @@ from .models import Bounty, BountyContribution, BountySubmission, BountyVote, Us
 from .schemas import BountyCreate, BountyOut, UserCreate
 from .ideaModeration import find_similar_idea,moderate_idea
 
+
+# Delete and recreate the database file at startup
+db_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "duuck.db")
+if os.path.exists(db_path):
+    os.remove(db_path)
 Base.metadata.create_all(bind=engine)
 
 # Load the fraud detection model
