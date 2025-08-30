@@ -1,4 +1,4 @@
-from fastapi import Body
+from fastapi import Query
 import joblib
 import os
 from fastapi import FastAPI, Depends, HTTPException
@@ -180,16 +180,41 @@ def create_video(v: schemas.VideoCreate, db: Session = Depends(get_db)):
     return {"id": vid.id}
 
 @app.put("/video/{video_id}")
-def update_video(video_id: int, updates: dict = Body(...), db: Session = Depends(get_db)):
+def update_video(
+    video_id: int,
+    title: str = Query(None),
+    creator_handle: str = Query(None),
+    views: int = Query(None),
+    length: int = Query(None),
+    votes: int = Query(None),
+    likes: int = Query(None),
+    db: Session = Depends(get_db)
+):
     video = db.get(models.Video, video_id)
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
-    for key, value in updates.items():
-        if hasattr(video, key):
-            setattr(video, key, value)
+    updated_fields = {}
+    if title is not None:
+        video.title = title
+        updated_fields["title"] = title
+    if creator_handle is not None:
+        video.creator_handle = creator_handle
+        updated_fields["creator_handle"] = creator_handle
+    if views is not None:
+        video.views = views
+        updated_fields["views"] = views
+    if length is not None:
+        video.length = length
+        updated_fields["length"] = length
+    if votes is not None:
+        video.votes = votes
+        updated_fields["votes"] = votes
+    if likes is not None:
+        video.likes = likes
+        updated_fields["likes"] = likes
     db.commit()
     db.refresh(video)
-    return {"id": video.id, **{k: getattr(video, k) for k in updates.keys() if hasattr(video, k)}}
+    return {"id": video.id, **updated_fields}
 
 
 # Get a video by id
@@ -356,7 +381,7 @@ def submit_bounty(bounty_id: int, creator_handle: str, video_id: int, db: Sessio
         raise HTTPException(status_code=400, detail="Bounty closed or cutoff passed")
     
     # Condition 1: User who created the bounty cannot submit
-    if bounty.creator_id == creator_id:
+    if bounty.creator_handle == creator_handle:
         raise HTTPException(status_code=403, detail="Bounty creator cannot submit a video to their own bounty.")
     
     # Condition 2: User who contributed to the bounty cannot submit
