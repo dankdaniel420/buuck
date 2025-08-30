@@ -158,9 +158,23 @@ def create_user(user_handle: str, db: Session = Depends(get_db)):
     db.refresh(new_user)
     return new_user
 
+@app.get("/user/getdefault")
+def get_default_user(db: Session = Depends(get_db)):
+    user = db.query(models.User).filter_by(handle="PixelPilot").first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Default user PixelPilot not found")
+    return {
+        "handle": user.handle,
+        "wallet": user.wallet,
+        "total_donations": user.total_donations,
+        "time_spent_on_app": user.time_spent_on_app,
+        "account_age_days": user.account_age_days,
+        "total_interactions": user.total_interactions
+    }
+
 @app.post("/video/create")
 def create_video(v: schemas.VideoCreate, db: Session = Depends(get_db)):
-    vid = models.Video(creator_id=v.creator_id, title=v.title, phash=v.phash, length=v.length)
+    vid = models.Video(creator_handle=v.creator_handle, title=v.title, phash=v.phash, length=v.length)
     db.add(vid); db.commit(); db.refresh(vid)
     return {"id": vid.id}
 
