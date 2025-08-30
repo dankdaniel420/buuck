@@ -209,7 +209,7 @@ def session_event(ev: schemas.SessionEventIn, db: Session = Depends(get_db)):
         db.get(models.User, db.get(models.Session, ev.session_id).viewer_handle).time_spent_on_app,
         db.get(models.User, db.get(models.Session, ev.session_id).viewer_handle).account_age_days
     ]
-    is_suspicious = fraud_model.predict([features])[0]  # Assuming the model returns a boolean
+    is_suspicious = fraud_model.predict([features])[0] 
 
     if is_suspicious:
         e.status = "under_review"
@@ -276,7 +276,7 @@ def create_bounty(bounty: BountyCreate, db: Session = Depends(get_db)):
     if len(response.get("similar")) != 0:
         raise HTTPException(status_code=400, detail="Similar bounty already exists: " + "; ".join(response.get("similar")))
     new_bounty = Bounty(
-        creator_id=bounty.creator_id,
+        creator_handle=bounty.creator_handle,
         description=bounty.description,
         cutoff_date=datetime.fromisoformat(bounty.cutoff_date),
         judging_start=datetime.fromisoformat(bounty.judging_start),
@@ -289,7 +289,7 @@ def create_bounty(bounty: BountyCreate, db: Session = Depends(get_db)):
     db.refresh(new_bounty)
     return {
         "id": new_bounty.id,
-        "creator_id": new_bounty.creator_id,
+        "creator_handle": new_bounty.creator_handle,
         "description": new_bounty.description,
         "prize_pool": new_bounty.prize_pool,
         "cutoff_date": new_bounty.cutoff_date.isoformat(),
@@ -299,22 +299,29 @@ def create_bounty(bounty: BountyCreate, db: Session = Depends(get_db)):
     }
 
 @app.post("/bounty/{bounty_id}/contribute")
-def contribute_bounty(bounty_id: int, viewer_id: int, amount: float, db: Session = Depends(get_db)):
+def contribute_bounty(bounty_id: int, viewer_handle: str, amount: float, db: Session = Depends(get_db)):
     # Check if viewer has submitted to this bounty
-    user_submission = db.query(BountySubmission).filter_by(bounty_id=bounty_id, creator_id=viewer_id).first()
+    user_submission = db.query(BountySubmission).filter_by(bounty_id=bounty_id, creator_handle=viewer_handle).first()
     if user_submission:
         raise HTTPException(status_code=403, detail="Submitters cannot donate to this bounty.")
     bounty = db.get(Bounty, bounty_id)
     if not bounty or bounty.is_closed:
         raise HTTPException(status_code=404, detail="Bounty not found or closed")
-    contribution = BountyContribution(bounty_id=bounty_id, viewer_id=viewer_id, amount=amount)
+    contribution = BountyContribution(bounty_id=bounty_id, viewer_handle=viewer_handle, amount=amount)
     bounty.prize_pool += amount
     db.add(contribution)
+
+    # Update viewer's wallet and total_donations
+    viewer = db.query(User).filter_by(handle=viewer_handle).first()
+    if viewer:
+        viewer.wallet -= amount
+        viewer.total_donations += amount
+
     db.commit()
     return {"success": True, "new_prize_pool": bounty.prize_pool}
 
 @app.post("/bounty/{bounty_id}/submit")
-def submit_bounty(bounty_id: int, creator_id: int, video_id: int, db: Session = Depends(get_db)):
+def submit_bounty(bounty_id: int, creator_handle: str, video_id: int, db: Session = Depends(get_db)):
     bounty = db.get(Bounty, bounty_id)
     if not bounty or bounty.is_closed or datetime.now() > bounty.cutoff_date:
         raise HTTPException(status_code=400, detail="Bounty closed or cutoff passed")
@@ -324,32 +331,32 @@ def submit_bounty(bounty_id: int, creator_id: int, video_id: int, db: Session = 
         raise HTTPException(status_code=403, detail="Bounty creator cannot submit a video to their own bounty.")
     
     # Condition 2: User who contributed to the bounty cannot submit
-    contribution = db.query(BountyContribution).filter_by(bounty_id=bounty_id, viewer_id=creator_id).first()
+    contribution = db.query(BountyContribution).filter_by(bounty_id=bounty_id, viewer_handle=creator_handle).first()
     if contribution:
         raise HTTPException(status_code=403, detail="Contributors cannot submit a video to this bounty.")
 
-    submission = BountySubmission(bounty_id=bounty_id, creator_id=creator_id, video_id=video_id)
+    submission = BountySubmission(bounty_id=bounty_id, creator_handle=creator_handle, video_id=video_id)
     db.add(submission)
     db.commit()
     return {"success": True}
 
 @app.post("/bounty/{bounty_id}/vote")
-def vote_bounty(bounty_id: int, submission_id: int, viewer_id: int, db: Session = Depends(get_db)):
+def vote_bounty(bounty_id: int, submission_id: int, viewer_handle: str, db: Session = Depends(get_db)):
     bounty = db.get(Bounty, bounty_id)
     # if not bounty or not (bounty.judging_start <= datetime.now() <= bounty.judging_end):
     #     raise HTTPException(status_code=400, detail="Not in judging period")
    
     # Check if viewer has submitted to this bounty
-    user_submission = db.query(BountySubmission).filter_by(bounty_id=bounty_id, creator_id=viewer_id).first()
+    user_submission = db.query(BountySubmission).filter_by(bounty_id=bounty_id, creator_handle=viewer_handle).first()
     if user_submission:
         raise HTTPException(status_code=403, detail="Submitters cannot vote on this bounty.")
 
     # Check if viewer has already voted for this submission
-    existing_vote = db.query(BountyVote).filter_by(bounty_id=bounty_id, submission_id=submission_id, viewer_id=viewer_id).first()
+    existing_vote = db.query(BountyVote).filter_by(bounty_id=bounty_id, submission_id=submission_id, viewer_handle=viewer_handle).first()
     if existing_vote:
         raise HTTPException(status_code=400, detail="User has already voted for this submission.")
 
-    vote = BountyVote(bounty_id=bounty_id, submission_id=submission_id, viewer_id=viewer_id)
+    vote = BountyVote(bounty_id=bounty_id, submission_id=submission_id, viewer_handle=viewer_handle)
     db.add(vote)
     db.commit()
     return {"success": True}
@@ -409,7 +416,7 @@ def view_bounty_winners(bounty_id: int, db: Session = Depends(get_db)):
             prize = round(bounty.prize_pool * splits[i], 2) if i < len(splits) else 0.0
             winners.append({
                 "submission_id": sid,
-                "creator_id": submission.creator_id,
+                "creator_handle": submission.creator_handle,
                 "video_id": submission.video_id,
                 "prize": prize
             })
